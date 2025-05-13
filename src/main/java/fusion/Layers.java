@@ -10,7 +10,7 @@ public class Layers {
   }
 
   public static INDArray maxPool(INDArray input, int kernelSize, int stride) {
-    System.out.println();
+    System.out.println(input.shape());
     
     return input;
   }
