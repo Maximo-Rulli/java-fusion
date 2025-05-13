@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Run with native access",
+      "request": "launch",
+      "mainClass": "fusion.Main",
+      "vmArgs": "--enable-native-access=ALL-UNNAMED"
+    }
+  ]
+}
