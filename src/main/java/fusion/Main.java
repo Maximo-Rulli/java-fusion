@@ -1,4 +1,4 @@
-package java.fusion;
+package fusion;
 
 public class Main {
     public static void main(String[] args) {
