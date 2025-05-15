@@ -12,10 +12,6 @@ public class UNet {
     return x;
   }
 
-  private double[] downSample(double[] x) {
-    return x;
-  }
-
   private double[] upSample(double[] x, int inChannels, int outChannels) {
     return x;
   }
