@@ -22,5 +22,8 @@ public class Main {
         // How to save and load matrices
         Nd4j.saveBinary(a, new File("matrix.bin"));
         System.out.println(Nd4j.readBinary(new File("matrix.bin")));
+
+        //Load from .npy
+        //System.out.println(Nd4j.readNpy(new File("weights/enc1_0_weight.npy")));
     }
 }
