@@ -62,6 +62,8 @@ Imagine a small matrix (kernel) sliding across a larger matrix (image), performi
 
 It’s not the inverse of a convolution, but it *reverses* the effect in terms of size. Instead of reducing spatial dimensions, it expands them. It’s how you go from compact latent representations back to full-size outputs. Think of it like unpooling with learned parameters.
 
+For more details checkout this Medium post: https://medium.com/data-science/understand-transposed-convolutions-and-build-your-own-transposed-convolution-layer-from-scratch-4f5d97b2967
+
 ---
 
 ## Multithreading
