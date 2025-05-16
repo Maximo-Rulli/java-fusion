@@ -88,22 +88,23 @@ It’s not for convenience. It’s for clarity — and maybe just a little bit o
 
 ## Citation
 
+```bibtex
 @misc{ho2020denoisingdiffusionprobabilisticmodels,
-      title={Denoising Diffusion Probabilistic Models}, 
-      author={Jonathan Ho and Ajay Jain and Pieter Abbeel},
-      year={2020},
-      eprint={2006.11239},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2006.11239}, 
+  title={Denoising Diffusion Probabilistic Models}, 
+  author={Jonathan Ho and Ajay Jain and Pieter Abbeel},
+  year={2020},
+  eprint={2006.11239},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG},
+  url={https://arxiv.org/abs/2006.11239}
 }
 
 @misc{ronneberger2015unetconvolutionalnetworksbiomedical,
-      title={U-Net: Convolutional Networks for Biomedical Image Segmentation}, 
-      author={Olaf Ronneberger and Philipp Fischer and Thomas Brox},
-      year={2015},
-      eprint={1505.04597},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/1505.04597}, 
+  title={U-Net: Convolutional Networks for Biomedical Image Segmentation}, 
+  author={Olaf Ronneberger and Philipp Fischer and Thomas Brox},
+  year={2015},
+  eprint={1505.04597},
+  archivePrefix={arXiv},
+  primaryClass={cs.CV},
+  url={https://arxiv.org/abs/1505.04597}
 }
