@@ -59,14 +59,14 @@ Skip connections bridge matching levels in downsampling and upsampling, allowing
 
 #### What is a convolution?
 
-[![](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*D6iRfzDkz-sEzyjYoVZ73w.gif)]
+![](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*D6iRfzDkz-sEzyjYoVZ73w.gif)
 
 
 Imagine a small matrix (kernel) sliding across a larger matrix (image), performing an element-wise multiplication and summing the result. This picks up patterns — edges, textures, gradients. The weights of the kernel are what the model learns.
 
 #### What is a transposed convolution?
 
-![image](https://github.com/user-attachments/assets/34bf05f4-2b5c-43b9-b7a3-9e330856b3b4)
+![](https://miro.medium.com/v2/resize:fit:1400/1*YwVviBiy2qAp0CwS5CDwmA.gif)
 
 It’s not the inverse of a convolution, but it *reverses* the effect in terms of size. Instead of reducing spatial dimensions, it expands them. It’s how you go from compact latent representations back to full-size outputs. Think of it like unpooling with learned parameters.
 
