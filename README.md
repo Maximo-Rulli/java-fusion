@@ -59,7 +59,8 @@ Skip connections bridge matching levels in downsampling and upsampling, allowing
 
 #### What is a convolution?
 
-![image](https://github.com/user-attachments/assets/0166f614-ad8e-4b73-9262-f0870e31a5fc)
+[![](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*D6iRfzDkz-sEzyjYoVZ73w.gif)]
+
 
 Imagine a small matrix (kernel) sliding across a larger matrix (image), performing an element-wise multiplication and summing the result. This picks up patterns — edges, textures, gradients. The weights of the kernel are what the model learns.
 
