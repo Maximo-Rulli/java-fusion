@@ -1,5 +1,4 @@
-# java-fusion  ![image](https://github.com/user-attachments/assets/5f0cb524-bafe-4c64-9a75-ed3e8a456128)
-
+# 🔥 java-fusion 🔥
 Denoising Diffusion Probabilistic Model (DDPM) trained on MNIST, implemented in Java for sampling, using threads and ND4J. The training is done externally in Python — this repo focuses on sampling: given a trained model that predicts noise, we reconstruct data from pure noise in a step-wise fashion. The network runs in Java, no autodiff, no frameworks, just raw arrays and control.
 
 ---
@@ -49,6 +48,9 @@ This loop is implemented in plain Java, using threads for parallel execution acr
 
 The model is a U-Net. Structurally simple, conceptually deep:
 
+![image](https://github.com/user-attachments/assets/bf2cb21a-b772-4424-b958-428f16848a29)
+
+
 - **Downsampling path**: A sequence of 2D convolutions + non-linearities that progressively compress spatial information into lower-dimensional representations.
 - **Bottleneck**: The dense representation — the point where all local context is merged.
 - **Upsampling path**: A sequence of **transposed convolutions** that increase the spatial dimensions, aiming to reconstruct the original structure.
@@ -57,9 +59,13 @@ Skip connections bridge matching levels in downsampling and upsampling, allowing
 
 #### What is a convolution?
 
+![image](https://github.com/user-attachments/assets/0166f614-ad8e-4b73-9262-f0870e31a5fc)
+
 Imagine a small matrix (kernel) sliding across a larger matrix (image), performing an element-wise multiplication and summing the result. This picks up patterns — edges, textures, gradients. The weights of the kernel are what the model learns.
 
 #### What is a transposed convolution?
+
+![image](https://github.com/user-attachments/assets/34bf05f4-2b5c-43b9-b7a3-9e330856b3b4)
 
 It’s not the inverse of a convolution, but it *reverses* the effect in terms of size. Instead of reducing spatial dimensions, it expands them. It’s how you go from compact latent representations back to full-size outputs. Think of it like unpooling with learned parameters.
 
