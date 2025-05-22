@@ -1,5 +1,11 @@
 package fusion;
 
+import java.io.File;
+import java.util.HashMap;
+
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+
 // Core DDPM structure
 public class DDPM {
     private BetaSchedule betaSchedule;
@@ -9,7 +15,8 @@ public class DDPM {
     private int timesteps;
     private UNet model;
 
-    public DDPM(int timesteps) {}
+    public DDPM(int timesteps) {
+    }
 
     public double[] sampleNoise(int[] shape) {}
 

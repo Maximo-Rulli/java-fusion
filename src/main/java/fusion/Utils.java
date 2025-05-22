@@ -9,6 +9,4 @@ public class Utils {
     public static double[] clipImage(double[] image) {}
 
     public static void saveImage(double[] image, String filename) {}
-
-    public static double[] loadMNISTImage(int index) {}
 }
