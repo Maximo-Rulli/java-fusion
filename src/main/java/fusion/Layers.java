@@ -56,7 +56,7 @@ public class Layers {
       }
     }
     
-    System.out.println(out);
+    //System.out.println(out);
     return out;
   }
 
@@ -69,6 +69,6 @@ public class Layers {
   }
 
   public static INDArray concat(INDArray x1, INDArray x2) {
-    return x1;
+    return Nd4j.concat(0, x1, x2);
   }
 }

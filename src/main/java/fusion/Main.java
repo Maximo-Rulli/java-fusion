@@ -34,6 +34,8 @@ public class Main {
 
         Layers.maxPool(a, 2, 2);
 
+        System.out.println(Layers.concat(a, a));
+
         // Instantiate the model
         DDPM model = new DDPM(100);
 
