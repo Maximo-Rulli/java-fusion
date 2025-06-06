@@ -5,8 +5,10 @@ import java.util.Arrays;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.cpu.nativecpu.NDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.convolution.Convolution;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 
+import java.io.File;
 import java.lang.Math;
 
 // Basic operations used in the U-Net architecture
@@ -15,13 +17,55 @@ public class Layers {
   private INDArray W;
   private INDArray b;
   
-  public Layers(INDArray weights, INDArray biases){
-    W = weights;
-    b = biases;
+  public Layers(String W_name, String b_name){
+    //Load from .npy files stored in /weights
+    W = Nd4j.readNpy(new File("weights/" + W_name + "_weight.npy"));
+    b = Nd4j.readNpy(new File("weights/" + b_name + "_bias.npy"));
   }
 
-  public static INDArray Conv(INDArray input, int inChannels, int outChannels, int kernelSize, int stride, int padding) {
-    return input;
+  public Layers(INDArray W, INDArray b){
+    //Set the weights to the provided matrices (debug testing only)
+    this.W = W;
+    this.b = b;
+  }
+
+  public INDArray Conv(INDArray input, int stride, int padding) {
+    final int outChannels = (int) this.W.shape()[0];
+    final int kernelSize = (int) this.W.shape()[3];
+    
+    // We transform the input into intermediate representation to then flatten it
+    INDArray patches = Convolution.im2col(input, kernelSize, kernelSize, stride, stride, padding, padding, false);
+    //Output shape: [N, Channels, Kernel_H, Kernel_W, Out_H, Out_W] -- For our use-case N=1 always
+
+    //System.out.println(patches);
+    
+    // Reshape patches to be multiplied by single vector of kernel
+    INDArray colReshaped = patches.permute(0, 4, 5, 1, 2, 3)  // [1, Out_H, Out_W, Channels, Kernel_H, Kernel_W]
+                            .reshape('c', 
+                            new long[]{
+                              1 * patches.shape()[4] * patches.shape()[5], 
+                              patches.shape()[1] * patches.shape()[2] * patches.shape()[3]
+                            });
+    //Output shape: [N * Out_H * Out_W, Channels * Kernel_H * Kernel_W]
+
+    // Reshape kernel to a vector to apply it to reshaped patches
+    INDArray kernelReshaped = this.W.reshape('c', 
+                            new long[]{
+                              W.shape()[0], 
+                              W.shape()[1] * W.shape()[2] * W.shape()[3]
+                            });
+    //Output shape: [outChannels, inChannels * Kernel_H * Kernel_W]
+
+    // Multiply colReshaped with kernel.T, equivalent to applying the filters correspondingly
+    INDArray result = colReshaped.mmul(kernelReshaped.transpose());
+    //Output shape: [N * Out_H * Out_W, outChannels]
+    
+    // Reshape to [N, outChannels, Out_H, Out_W]
+    INDArray out = result.reshape('c', 1, outChannels, patches.shape()[4], patches.shape()[5]);
+    
+    System.out.println(Arrays.toString(out.shape()));
+    //System.out.println(out);
+    return out;
   }
 
   public static INDArray maxPool(INDArray input, int kernelSize, int stride) {

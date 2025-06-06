@@ -27,25 +27,29 @@ public class Main {
 
         //INDArray image = a.broadcast(3, 2, 4, 4);
 
-        INDArray b = Nd4j.create(new float[]{-9, -8, -7, -6, -5, -4, -3, -2, -9, -8, -7, -6, -5, -4, -3, -2}, new int[]{1, 4, 2, 2});
+        INDArray b = Nd4j.create(new float[]{-9, -8, -7, -6, -5, -4, -3, -2, -9, -8, -7, -6, -5, -4, -3, -2}, new int[]{1, 1, 4, 4});
         //INDArray result = a.add(b);
         //System.out.println("Sum:\n" + result);
 
+        //Layers.maxPool(a, 2, 2);
 
-        Layers.maxPool(a, 2, 2);
+        //System.out.println(Layers.concat(a, a));
+        System.out.println(b);
 
-        System.out.println(Layers.concat(a, a));
+        Layers TestL = new Layers("down1_0_block1_2", "down1_0_block1_2");
 
+        INDArray testB = Nd4j.rand(new int[]{1, 64, 28, 28});
+
+        TestL.Conv(testB, 1, 0);
+        //Layers.Conv(b, 1, 1, 2, 1, 0);
         // Instantiate the model
-        DDPM model = new DDPM(100);
+        //DDPM model = new DDPM(100);
 
         // How to save and load matrices
         /*
         Nd4j.saveBinary(a, new File("matrix.bin"));
         System.out.println(Nd4j.readBinary(new File("matrix.bin")));
         */
-
-        //Load from .npy
-        //System.out.println(Nd4j.readNpy(new File("weights/enc1_0_weight.npy")));
+        
     }
 }

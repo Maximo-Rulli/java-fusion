@@ -6,7 +6,7 @@
       "name": "Run with native access",
       "request": "launch",
       "mainClass": "fusion.Main",
-      "vmArgs": "--enable-native-access=ALL-UNNAMED"
+      "vmArgs": "-ea --enable-native-access=ALL-UNNAMED"
     }
   ]
 }
