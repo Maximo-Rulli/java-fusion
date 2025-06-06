@@ -3,7 +3,6 @@ package fusion;
 import java.util.Arrays;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.cpu.nativecpu.NDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.convolution.Convolution;
 import org.nd4j.linalg.indexing.NDArrayIndex;
@@ -12,18 +11,18 @@ import java.io.File;
 import java.lang.Math;
 
 // Basic operations used in the U-Net architecture
-public class Layers {
+public class Layer {
   // Weights W, Biases b
   private INDArray W;
   private INDArray b;
   
-  public Layers(String W_name, String b_name){
+  public Layer(String W_name, String b_name){
     //Load from .npy files stored in /weights
     W = Nd4j.readNpy(new File("weights/" + W_name + "_weight.npy"));
     b = Nd4j.readNpy(new File("weights/" + b_name + "_bias.npy"));
   }
 
-  public Layers(INDArray W, INDArray b){
+  public Layer(INDArray W, INDArray b){
     //Set the weights to the provided matrices (debug testing only)
     this.W = W;
     this.b = b;
