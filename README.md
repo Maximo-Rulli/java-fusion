@@ -1,4 +1,5 @@
-# 🔥 java-fusion 🔥
+# java-fusion ![image](https://github.com/user-attachments/assets/ffcc74b3-e709-443f-ae25-8b73bc9c0f5c)
+
 Denoising Diffusion Probabilistic Model (DDPM) trained on MNIST, implemented in Java for sampling, using threads and ND4J. The training is done externally in Python — this repo focuses on sampling: given a trained model that predicts noise, we reconstruct data from pure noise in a step-wise fashion. The network runs in Java, no autodiff, no frameworks, just raw arrays and control.
 
 ---
