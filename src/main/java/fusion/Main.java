@@ -33,7 +33,7 @@ public class Main {
 
     INDArray testB = Nd4j.rand(new int[]{1, 64, 28, 28});
 
-    TestL.Conv(testB, 1, 0);
+    ///TestL.Conv(testB, 1, 0);
 
     Correctness.run();
     //Layers.Conv(b, 1, 1, 2, 1, 0);

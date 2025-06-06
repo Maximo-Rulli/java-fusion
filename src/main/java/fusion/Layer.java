@@ -29,20 +29,22 @@ public class Layer {
   }
 
   public INDArray Conv(INDArray input, int stride, int padding) {
+    return Conv(input, stride, padding, false);
+  }
+
+  public INDArray Conv(INDArray input, int stride, int padding, boolean debug) {
     final int outChannels = (int) this.W.shape()[0];
     final int kernelSize = (int) this.W.shape()[3];
-    
+
     // We transform the input into intermediate representation to then flatten it
     INDArray patches = Convolution.im2col(input, kernelSize, kernelSize, stride, stride, padding, padding, false);
     //Output shape: [N, Channels, Kernel_H, Kernel_W, Out_H, Out_W] -- For our use-case N=1 always
-
-    //System.out.println(patches);
     
     // Reshape patches to be multiplied by single vector of kernel
     INDArray colReshaped = patches.permute(0, 4, 5, 1, 2, 3)  // [1, Out_H, Out_W, Channels, Kernel_H, Kernel_W]
                             .reshape('c', 
                             new long[]{
-                              1 * patches.shape()[4] * patches.shape()[5], 
+                              patches.shape()[4] * patches.shape()[5], 
                               patches.shape()[1] * patches.shape()[2] * patches.shape()[3]
                             });
     //Output shape: [N * Out_H * Out_W, Channels * Kernel_H * Kernel_W]
@@ -50,8 +52,8 @@ public class Layer {
     // Reshape kernel to a vector to apply it to reshaped patches
     INDArray kernelReshaped = this.W.reshape('c', 
                             new long[]{
-                              W.shape()[0], 
-                              W.shape()[1] * W.shape()[2] * W.shape()[3]
+                              outChannels, 
+                              W.shape()[1] * kernelSize * kernelSize
                             });
     //Output shape: [outChannels, inChannels * Kernel_H * Kernel_W]
 
@@ -60,10 +62,26 @@ public class Layer {
     //Output shape: [N * Out_H * Out_W, outChannels]
     
     // Reshape to [N, outChannels, Out_H, Out_W]
-    INDArray out = result.reshape('c', 1, outChannels, patches.shape()[4], patches.shape()[5]);
+    INDArray out = result.transpose().reshape(result.shape()[0]*result.shape()[1]).reshape(1,outChannels,patches.shape()[4],patches.shape()[5]);
     
-    //System.out.println(out);
+    if (debug){
+      System.out.println("Input:\n"+input);
+      System.out.println("Patches:\n"+patches);
+      System.out.println("Colreshaped:\n"+colReshaped);
+      System.out.println("Kernel:\n"+this.W);
+      System.out.println("Reshaped Kernel (after transpose):\n"+kernelReshaped.transpose());
+      System.out.println("Output:\n"+out);
+    }
+
     return out;
+  }
+
+  public static INDArray TranspConv(INDArray input, int inChannels, int outChannels, int kernelSize, int stride, int out_padding) {
+    return input;
+  }
+
+  public static INDArray concat(INDArray x1, INDArray x2) {
+    return Nd4j.concat(0, x1, x2);
   }
 
   public static INDArray maxPool(INDArray input, int kernelSize, int stride) {
@@ -106,11 +124,4 @@ public class Layer {
     return maxPool(input, 2, 1);
   }
 
-  public static INDArray TranspConv(INDArray input, int inChannels, int outChannels, int kernelSize, int stride, int out_padding) {
-    return input;
-  }
-
-  public static INDArray concat(INDArray x1, INDArray x2) {
-    return Nd4j.concat(0, x1, x2);
-  }
 }
