@@ -62,7 +62,6 @@ public class Layer {
     // Reshape to [N, outChannels, Out_H, Out_W]
     INDArray out = result.reshape('c', 1, outChannels, patches.shape()[4], patches.shape()[5]);
     
-    System.out.println(Arrays.toString(out.shape()));
     //System.out.println(out);
     return out;
   }
