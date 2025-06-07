@@ -29,12 +29,12 @@ public class Main {
 
     //System.out.println(Layers.concat(a, a));
 
-    Layer TestL = new Layer("down1_0_block1_2", "down1_0_block1_2");
+    Layer TestL = new Layer("up1_1_block2_2", "up1_1_block2_2");
 
-    INDArray testB = Nd4j.rand(new int[]{1, 64, 28, 28});
+    INDArray testB = Nd4j.rand(new int[]{1, 2, 4, 4});
 
     ///TestL.Conv(testB, 1, 0);
-
+    
     Correctness.run();
     //Layers.Conv(b, 1, 1, 2, 1, 0);
     

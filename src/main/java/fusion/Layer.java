@@ -1,6 +1,5 @@
 package fusion;
 
-import java.util.Arrays;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -29,16 +28,16 @@ public class Layer {
   }
 
   public INDArray Conv(INDArray input, int stride, int padding) {
-    return Conv(input, stride, padding, false);
+    return Conv(input, stride, padding, true, false);
   }
 
-  public INDArray Conv(INDArray input, int stride, int padding, boolean debug) {
+  public INDArray Conv(INDArray input, int stride, int padding, boolean bias, boolean debug) {
     final int outChannels = (int) this.W.shape()[0];
     final int kernelSize = (int) this.W.shape()[3];
 
     // We transform the input into intermediate representation to then flatten it
     INDArray patches = Convolution.im2col(input, kernelSize, kernelSize, stride, stride, padding, padding, false);
-    //Output shape: [N, Channels, Kernel_H, Kernel_W, Out_H, Out_W] -- For our use-case N=1 always
+    //Output shape: [N, Channels, Kernel_H, Kernel_W, Out_W, Out_H] -- For our use-case N=1 always
     
     // Reshape patches to be multiplied by single vector of kernel
     INDArray colReshaped = patches.permute(0, 4, 5, 1, 2, 3)  // [1, Out_H, Out_W, Channels, Kernel_H, Kernel_W]
@@ -62,8 +61,15 @@ public class Layer {
     //Output shape: [N * Out_H * Out_W, outChannels]
     
     // Reshape to [N, outChannels, Out_H, Out_W]
-    INDArray out = result.transpose().reshape(result.shape()[0]*result.shape()[1]).reshape(1,outChannels,patches.shape()[4],patches.shape()[5]);
-    
+    INDArray out = result.transpose()
+                            .reshape(result.shape()[0]*result.shape()[1]) // First we flatten the obtained array
+                            .reshape(1,outChannels,patches.shape()[4],patches.shape()[5]); //Then reshape (only way to make it work)
+
+    if (bias){
+      INDArray summableb = (this.b).reshape(1,outChannels,1,1).broadcast(1,outChannels,patches.shape()[4],patches.shape()[5]);
+      out = out.add(summableb);
+    }
+
     if (debug){
       System.out.println("Input:\n"+input);
       System.out.println("Patches:\n"+patches);
@@ -76,8 +82,54 @@ public class Layer {
     return out;
   }
 
-  public static INDArray TranspConv(INDArray input, int inChannels, int outChannels, int kernelSize, int stride, int out_padding) {
-    return input;
+  public INDArray TranspConv(INDArray input, int stride, int padding, boolean debug) {
+    // Extract input and kernel shape info
+    final int C = (int) input.shape()[1];
+    final int H = (int) input.shape()[2];
+    final int W = (int) input.shape()[3];
+
+    int outC = (int) this.W.shape()[0];
+    int kernelSize = (int) this.W.shape()[2];
+
+    // 1. Reshape input to [Channels, H * W]
+    INDArray inputFlat = input.reshape(C, H * W); // [Channels, H*W]
+
+    // 2. Reshape kernel to [outChannels, Channels * kernelH * kernelW]
+    INDArray kernelFlat = this.W.reshape(outC, -1);
+
+    // 3. Multiply: [H*W, Channels] x [Channels, outChannels * kernelH * kernelW]
+    INDArray patches = inputFlat.transpose().mmul(kernelFlat); // [H*W, outChannels * kH * kW]
+
+    // 4. Reshape to col2im format: [1, outChannels, H, W, kernelH, kernelW]
+    INDArray patchesReshaped = patches.transpose()                        // [Channels * kernelH * kernelW, H*W]
+            .reshape(outC, kernelSize, kernelSize, H, W)                              // [Channels, kernelH, kernelW, H, W]
+            .permute(0, 3, 4, 1, 2)                                       // [Channels, H, W, kernelH, kernelW]
+            .reshape(1, outC, H, W, kernelSize, kernelSize);                          // [1, Channels, H, W, kernelH, kernelW]
+
+    // 5. Output shape before cropping
+    int fullOutH = (H - 1) * stride + kernelSize;
+    int fullOutW = (W - 1) * stride + kernelSize;
+
+    // 6. Use col2im to scatter patches into output image
+    INDArray output = Convolution.col2im(
+      patchesReshaped,
+      stride, stride,
+      0, 0, // we already handled padding by target shape
+      fullOutH,
+      fullOutW
+    );
+
+    // 7. Crop output to simulate padding (transpose conv "pads" output)
+    if (padding > 0) {
+      output = output.get(
+        NDArrayIndex.all(),
+        NDArrayIndex.all(),
+        NDArrayIndex.interval(padding, padding + (fullOutH - 2 * padding)),
+        NDArrayIndex.interval(padding, padding + (fullOutW - 2 * padding))
+      );
+    }
+
+      return output;
   }
 
   public static INDArray concat(INDArray x1, INDArray x2) {

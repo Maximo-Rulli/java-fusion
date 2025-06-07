@@ -16,10 +16,12 @@ public class Correctness{
     UP,
     SAME,
     DOWN,
+    TRANSP
   }
 
   public static void run() throws IOException, InterruptedException{
     ConvTest.run();
+    TranspConvTest.run();
   }
 
   private static class ConvTest {
@@ -29,7 +31,7 @@ public class Correctness{
       int padding = 0;
       List<INDArray> outMats = StandardMatrices.UpChannelsMat(false);
       Layer UpChannelLayer = new Layer(outMats.get(1), outMats.get(1));
-      INDArray layerOut = UpChannelLayer.Conv(outMats.get(0), stride, padding);
+      INDArray layerOut = UpChannelLayer.Conv(outMats.get(0), stride, padding, false, false);
       INDArray UpChannelMatOut = Nd4j.readBinary(new File("src/main/java/fusion/correct_outs/UpChannelMatOutp0.bin"));
 
       if (!UpChannelMatOut.equalsWithEps(layerOut, 1e-5)){
@@ -40,9 +42,9 @@ public class Correctness{
       }
 
       padding = 1;
-      outMats = StandardMatrices.SameChannelsMat(false);
+      outMats = StandardMatrices.SameChannelsMat(null, null, false);
       Layer SameChannelLayer = new Layer(outMats.get(1), outMats.get(1));
-      layerOut = SameChannelLayer.Conv(outMats.get(0), stride, padding);
+      layerOut = SameChannelLayer.Conv(outMats.get(0), stride, padding, false, false);
       INDArray SameChannelMatOut = Nd4j.readBinary(new File("src/main/java/fusion/correct_outs/SameChannelMatOutp1.bin"));
 
       if (!SameChannelMatOut.equalsWithEps(layerOut, 1e-5)){
@@ -56,7 +58,7 @@ public class Correctness{
       padding = 0;
       outMats = StandardMatrices.DownChannelsMat(false);
       Layer DownChannelLayer = new Layer(outMats.get(1), outMats.get(1));
-      layerOut = DownChannelLayer.Conv(outMats.get(0), stride, padding);
+      layerOut = DownChannelLayer.Conv(outMats.get(0), stride, padding, false, false);
       INDArray DownChannelMatOut = Nd4j.readBinary(new File("src/main/java/fusion/correct_outs/DownChannelMatOutp0.bin"));
 
       if (!DownChannelMatOut.equalsWithEps(layerOut, 1e-5)){
@@ -66,13 +68,27 @@ public class Correctness{
         throw new AssertionError("Convolution test failed.");
       }
       
-      //generateSample(0, 1, convType.UP);
+      //generateSample(0, 1, convType.UP, null, null);
       
       //Utils.printld("Verificando convolución", "Convolución verificada con éxito!");
     }
   }
 
-  private static void generateSample(int padding, int stride, convType convolutionType) throws IOException{
+  
+  private static class TranspConvTest {
+    private static void run() throws IOException, InterruptedException{
+      final int stride = 1;
+      int padding = 0;
+      
+      
+      generateSample(padding, stride, convType.TRANSP, 3, 3);
+      
+      //Utils.printld("Verificando convolución", "Convolución verificada con éxito!");
+    }
+  }
+  
+  
+  private static void generateSample(int padding, int stride, convType convolutionType, Integer Height, Integer Width) throws IOException{
     List<INDArray> outMats;
     String filename;
 
@@ -81,18 +97,35 @@ public class Correctness{
       filename = "DownChannelMatOutp";
     }
     else if (convolutionType == convType.SAME){
-      outMats = StandardMatrices.SameChannelsMat(null);
+      outMats = StandardMatrices.SameChannelsMat(Height, Width, null);
       filename = "SameChannelMatOutp";
     }
-    else {
+    else if (convolutionType == convType.UP) {
       outMats = StandardMatrices.UpChannelsMat(null);
       filename = "UpChannelMatOutp";
     }
+    else {
+      outMats = StandardMatrices.SameChannelsMat(Height, Width, false);
+      filename = "TranspMat"+Height+"x"+Width+"p";
+    }
 
-    SDVariable convOut = config(outMats.get(0), outMats.get(1), padding, stride);
+    SDVariable convOut;
+    INDArray output;
 
-    INDArray output = convOut.eval();
-    Nd4j.saveBinary(output, new File(filename + padding + ".bin"));
+    if (convolutionType != convType.TRANSP){
+      convOut = config(outMats.get(0), outMats.get(1), padding, stride);
+      output = convOut.eval();
+      Nd4j.saveBinary(output, new File(filename + padding + ".bin"));
+    }
+
+    else{
+      Layer DummyL = new Layer(outMats.get(1), outMats.get(1));
+      INDArray testOut = DummyL.TranspConv(outMats.get(0), stride, padding, false);
+      System.out.println("Input: \n"+outMats.get(0));
+      System.out.println("Weights: \n"+outMats.get(1));
+      System.out.println("Output we get: \n"+testOut);
+    }
+
   }
 
   private static SDVariable config(INDArray input, INDArray kernel, int padding, int stride) {
@@ -113,4 +146,5 @@ public class Correctness{
 
     return convolution;
   }
+
 }

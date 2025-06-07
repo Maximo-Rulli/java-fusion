@@ -6,5 +6,5 @@ public class BetaSchedule {
 
     public BetaSchedule(int timesteps) {}
 
-    public double[] getCosineSchedule() {}
+    public void getCosineSchedule() {}
 }

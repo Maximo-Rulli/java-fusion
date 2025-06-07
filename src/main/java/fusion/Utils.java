@@ -2,9 +2,9 @@ package fusion;
 
 // Utility class for image operations and noise handling
 public class Utils {
-    public static double[] addNoise(double[] image, double[] noise, double alpha) {}
+    public static void addNoise(double[] image, double[] noise, double alpha) {}
 
-    public static double[] clipImage(double[] image) {}
+    public static void clipImage(double[] image) {}
 
     public static void saveImage(double[] image, String filename) {}
 

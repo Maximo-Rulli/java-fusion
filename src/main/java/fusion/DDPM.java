@@ -18,11 +18,11 @@ public class DDPM {
     public DDPM(int timesteps) {
     }
 
-    public double[] sampleNoise(int[] shape) {}
+    public void sampleNoise(int[] shape) {}
 
-    public double[] qSample(double[] x0, double[] noise, int t) {}
+    public void qSample(double[] x0, double[] noise, int t) {}
 
-    public double[] pSample(double[] xt, int t) {}
+    public void pSample(double[] xt, int t) {}
 
-    public double[][] generateSamples(int numSamples) {}
+    public void generateSamples(int numSamples) {}
 }

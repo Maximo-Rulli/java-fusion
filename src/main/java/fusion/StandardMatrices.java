@@ -20,15 +20,15 @@ public class StandardMatrices {
     final int C = 2;
     final int outChannels = 3;
 
-    return (tfStruct == null ? builder(C, outChannels) : builder(C, outChannels, tfStruct));
+    return (tfStruct == null ? builder(C, outChannels, null, null) : builder(C, outChannels, null, null, tfStruct));
   }
 
   // Matrices representing a preservation of output channels
-  public static List<INDArray> SameChannelsMat(Boolean tfStruct) {
+  public static List<INDArray> SameChannelsMat(Integer Height, Integer Width, Boolean tfStruct) {
     final int C = 3;
     final int outChannels = 3;
 
-    return (tfStruct == null ? builder(C, outChannels) : builder(C, outChannels, tfStruct));
+    return (tfStruct == null ? builder(C, outChannels, Height, Width) : builder(C, outChannels, Height, Width, tfStruct));
   }
 
   // Matrices representing a decrease of output channels
@@ -36,25 +36,32 @@ public class StandardMatrices {
     final int C = 3;
     final int outChannels = 2;
 
-    return (tfStruct == null ? builder(C, outChannels) : builder(C, outChannels, tfStruct));
+    return (tfStruct == null ? builder(C, outChannels, null, null) : builder(C, outChannels, null, null, tfStruct));
   }
 
-  private static List<INDArray> builder(int C, int outChannels){
-    return builder(C, outChannels, true);
+  private static List<INDArray> builder(int C, int outChannels, Integer Height, Integer Width){
+    return builder(C, outChannels, Height, Width, true);
   }
 
-  private static List<INDArray> builder(int C, int outChannels, boolean tfStruct){
+  private static List<INDArray> builder(int C, int outChannels, Integer Height, Integer Width, boolean tfStruct){
     //tfStruct is whether we are using tensorflows structure of building kernels
     //or pytorch's. Tf:[kernelH, kernelW, input, output] Torch:[output, input, kernelW, kernelH]
     //Note that all the loaded weights will be in Torch format
+    int inH, inW;
+    if (Height == null && Width == null){
+      inH = H; inW = W;
+    }
+    else {
+      inH = Height; inW = Width;
+    }
 
     // Input shape: [N, C, H, W]
-    INDArray input = Nd4j.create(new int[]{1, C, H, W});
+    INDArray input = Nd4j.create(new int[]{1, C, inH, inW});
     
     // Assign input[c, h, w] = c + h + w for variety
     for (int c = 0; c < C; c++) {
-        for (int h = 0; h < H; h++) {
-            for (int w = 0; w < W; w++) {
+        for (int h = 0; h < inH; h++) {
+            for (int w = 0; w < inW; w++) {
                 input.putScalar(new int[]{0, c, h, w}, c + h + w);
             }
         }
@@ -68,9 +75,9 @@ public class StandardMatrices {
       
       // Each (:, :, c, f) filter is filled with (f + 1) * (c + 1)
       for (int f = 0; f < outChannels; f++) {
-          for (int c = 0; c < C; c++) {
-              kernel.get(all(), all(), point(c), point(f)).assign((f + 1) * (c + 1));
-          }
+        for (int c = 0; c < C; c++) {
+          kernel.get(all(), all(), point(c), point(f)).assign((f + 1) * (c + 1));
+        }
       }
     }
     else {
@@ -79,9 +86,9 @@ public class StandardMatrices {
       
       // Each (:, :, c, f) filter is filled with (f + 1) * (c + 1)
       for (int f = 0; f < outChannels; f++) {
-          for (int c = 0; c < C; c++) {
-              kernel.get(point(f), point(c), all(), all()).assign((f + 1) * (c + 1));
-          }
+        for (int c = 0; c < C; c++) {
+          kernel.get(point(f), point(c), all(), all()).assign((f + 1) * (c + 1));
+        }
       }
     }
 
