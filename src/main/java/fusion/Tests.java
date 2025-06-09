@@ -1,12 +1,13 @@
 package fusion;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
 public class Tests {
-  public static void run() {
+  public static void run() throws IOException {
     INDArray th = (Nd4j.create(new float[]{2})).broadcast(1,1,28,28);
     //System.out.println("Boradcasted " + t.broadcast(1,1,28,28));
 
@@ -38,8 +39,8 @@ public class Tests {
 
     //Layers.Conv(b, 1, 1, 2, 1, 0);
 
-    UNet Model = new UNet();
+    //UNet Model = new UNet();
 
-    System.out.println(Model.predict(th, b));
+    //INDArray output = Model.predict(th, b);
   }
 }

@@ -208,7 +208,7 @@ public class Layer {
   }
 
   public static INDArray concat(INDArray x1, INDArray x2) {
-    return Nd4j.concat(0, x1, x2);
+    return Nd4j.concat(1, x1, x2);
   }
   
   public static INDArray SiLU(INDArray x) {

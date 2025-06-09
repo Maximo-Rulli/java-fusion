@@ -16,12 +16,20 @@ public class Correctness{
     UP,
     SAME,
     DOWN,
-    TRANSP
+    TRANSP,
+    MODEL
+  }
+  UNet Model;
+
+  public Correctness(UNet Model){
+    this.Model = Model;
   }
 
-  public static void run() throws IOException, InterruptedException{
+  public void run() throws IOException, InterruptedException{
     ConvTest.run();
     TranspConvTest.run();
+    ModelTest MTest = new ModelTest();
+    MTest.run();
   }
 
   private static class ConvTest {
@@ -64,7 +72,7 @@ public class Correctness{
       
       //generateSample(0, 1, convType.UP, null, null);
       
-      //Utils.printld("Verificando convolución", "Convolución verificada con éxito!");
+      Utils.printld("Verificando convolución", "Convolución verificada con éxito!");
     }
   }
 
@@ -107,10 +115,20 @@ public class Correctness{
       TrueOut = Nd4j.readNpy(new File("src/main/java/fusion/correct_outs/transp/TranspConv10x10s2p1c128-rand-out.npy"));
       checkError(layerOut, TrueOut, convType.TRANSP);
       
-      //Utils.printld("Verificando convolución transpuesta", "Convolución transpuesta verificada con éxito!");
+      Utils.printld("Verificando convolución transpuesta", "Convolución transpuesta verificada con éxito!");
     }
   }
   
+  private class ModelTest {
+    private  void run() throws IOException, InterruptedException{
+      INDArray sampleInput = (Nd4j.create(new float[]{2})).broadcast(1,1,28,28);
+      INDArray sampleTime = Nd4j.create(new float[]{1}, new int[]{1});
+      INDArray predicted = Correctness.this.Model.predict(sampleInput, sampleTime);
+      INDArray TrueOut = Nd4j.readBinary(new File("src/main/java/fusion/correct_outs/java_fusion.bin"));
+      checkError(predicted, TrueOut, convType.MODEL);
+      Utils.printld("Verificando modelo completo", "Modelo verificado con éxito!");
+    }
+  }
   
   private static void generateSample(int padding, int stride, convType convolutionType, Integer Height, Integer Width) throws IOException{
     List<INDArray> outMats;
@@ -144,8 +162,11 @@ public class Correctness{
       if (Type == convType.TRANSP){
         System.out.println("\nError while assessing transpose convolution correctness, incorrect output returned.\n");
       }
-      else {
+      else if  (Type != convType.MODEL) {
         System.out.println("\nError while assessing convolution correctness, incorrect output returned.\n");
+      }
+      else {
+        System.out.println("\nError while assessing model correctness, incorrect output returned.\n");
       }
       System.out.println("Shape: "+Arrays.toString(TrueOut.shape()));
       System.out.println("Returned matrix (wrong):\n" +  layerOut);

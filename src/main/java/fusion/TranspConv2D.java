@@ -10,13 +10,13 @@ public class TranspConv2D extends Module{
   public int p;
 
   public TranspConv2D(String path){
-    layer = new Layer(path, layerType.Conv);
+    layer = new Layer(path, layerType.TranspConv);
     s = 1;
     p = 0;
   }
 
   public TranspConv2D(String path, int stride, int padding){
-    layer = new Layer(path, layerType.Conv);
+    layer = new Layer(path, layerType.TranspConv);
     s = stride;
     p = padding;
   }

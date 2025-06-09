@@ -19,10 +19,10 @@ public class ResBlock extends Module{
     timeMLP = new Linear(generalPath + "time_mlp_1");
 
     // Conv1: (inC → outC) with kernel 3x3
-    conv1 = new Conv2D(generalPath + "block1_2", 1, 1);
+    conv1 = new Conv2D(generalPath + "block1_1", 1, 1);
 
     // Conv2: (outC → outC) with kernel 3x3
-    conv2 = new Conv2D(generalPath + "block2_2", 1, 1);
+    conv2 = new Conv2D(generalPath + "block2_1", 1, 1);
 
     // Shortcut if inC != outC
     if (!same) {
@@ -45,6 +45,9 @@ public class ResBlock extends Module{
     if (shortcut != null){
       INDArray shortcutOut = shortcut.forward(x);
       h = h.add(shortcutOut);
+    }
+    else {
+      h = h.add(x);
     }
 
     return h;  

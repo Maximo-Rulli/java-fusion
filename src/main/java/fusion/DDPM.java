@@ -16,6 +16,7 @@ public class DDPM {
     private UNet model;
 
     public DDPM(int timesteps) {
+        System.out.println();
     }
 
     public void sampleNoise(int[] shape) {}
