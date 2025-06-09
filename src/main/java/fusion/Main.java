@@ -8,5 +8,9 @@ public class Main {
     Correctness CorrectnessTests = new Correctness(Model);
     CorrectnessTests.run();
     Tests.run();
+
+    DDPM JavaFusion = new DDPM(Model, 1500);
+    
+    ImageSaver.saveImage(JavaFusion.sample(100), "mnist.png");
   }
 }
