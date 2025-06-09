@@ -139,6 +139,7 @@ public class Correctness{
 
   }
 
+
   private static void checkError(INDArray layerOut, INDArray TrueOut, convType Type){
     if (!TrueOut.equalsWithEps(layerOut, 1e-3)){
       if (Type == convType.TRANSP){
@@ -155,6 +156,7 @@ public class Correctness{
     }
   }
 
+  
   private static SDVariable config(INDArray input, INDArray kernel, int padding, int stride) {
     final int kernelSize = (int) kernel.shape()[2];
 
