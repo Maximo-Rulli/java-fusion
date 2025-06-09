@@ -11,22 +11,21 @@ public class Main {
     //System.out.println("Boradcasted " + t.broadcast(1,1,28,28));
 
     INDArray a = Nd4j.create(new float[]{
-        1, 2,
-        6, 7,
-
-        0.1f, 0.2f,
-        0.6f, 0.7f,
-
-        -1, -2,
-        -6, -7,}, new int[]{1, 3, 2, 2});
+        1, 2, 3, 4, 5}, new int[]{1, 5});
 
     //INDArray image = a.broadcast(3, 2, 4, 4);
 
     INDArray k = Nd4j.create(new float[]{
-                            1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1,
-                            1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1,}, new int[]{2, 3, 2, 2});
+                            1, 0, 0, 0, 0,
+                            0, 1, 0, 0, 0,
+                            0, 0, 1, 0, 0,
+                            0, 0, 0, 1, 0,
+                            0, 0, 0, 0, 1,
+                            1, 0, 1, 0, 1,
+                          
+                          }, new int[]{6,5});
     
-    INDArray b = Nd4j.create(new float[]{100,1}, new int[]{2});
+    INDArray b = Nd4j.create(new float[]{0,0,1,0,0,-9}, new int[]{6});
     //Layers.maxPool(a, 2, 2);
 
     //System.out.println(Layers.concat(a, a));
@@ -35,7 +34,7 @@ public class Main {
 
     INDArray testB = Nd4j.rand(new int[]{1, 2, 4, 4});
 
-    System.out.println(TestL.TranspConv(a, 2, 0));
+    System.out.println(TestL.Linear(a, true));
     
     Correctness.run();
     //Layers.Conv(b, 1, 1, 2, 1, 0);

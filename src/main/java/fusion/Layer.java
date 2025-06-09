@@ -187,6 +187,10 @@ public class Layer {
     return output;
   }
 
+  public INDArray Linear(INDArray input, boolean bias) {
+    return this.b.reshape(1, this.b.shape()[0]).add(input.mmul(this.W.transpose()));
+  }
+
   public static INDArray concat(INDArray x1, INDArray x2) {
     return Nd4j.concat(0, x1, x2);
   }
