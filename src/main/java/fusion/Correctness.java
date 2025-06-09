@@ -60,7 +60,6 @@ public class Correctness{
       ConvLayer = new Layer(Weights, Weights);
       layerOut = ConvLayer.Conv(Input, stride, padding, false, false);
       TrueOut = Nd4j.readNpy(new File("src/main/java/fusion/correct_outs/conv/Conv16x16s2p1ic128oc256-rand-out.npy"));
-      Nd4j.saveBinary(TrueOut, new File("Conv16x16s2p1ic128oc256-rand-out" + ".bin"));
       checkError(layerOut, TrueOut, convType.UP);
       
       //generateSample(0, 1, convType.UP, null, null);
@@ -77,7 +76,7 @@ public class Correctness{
       int padding = 0;
       List<INDArray> outMats = StandardMatrices.TranspMat(3, 3, 4);
       Layer TranspLayer = new Layer(outMats.get(1), outMats.get(1));
-      INDArray layerOut = TranspLayer.TranspConv(outMats.get(0), stride, padding);
+      INDArray layerOut = TranspLayer.TranspConv(outMats.get(0), stride, padding, false);
       INDArray TrueOut = Nd4j.readBinary(new File("src/main/java/fusion/correct_outs/transp/TranspConv3x3s1p0.bin"));
       checkError(layerOut, TrueOut, convType.TRANSP);
 
@@ -85,7 +84,7 @@ public class Correctness{
       padding = 1;
       outMats = StandardMatrices.TranspMat(5, 5, 3);
       TranspLayer = new Layer(outMats.get(1), outMats.get(1));
-      layerOut = TranspLayer.TranspConv(outMats.get(0), stride, padding);
+      layerOut = TranspLayer.TranspConv(outMats.get(0), stride, padding, false);
       TrueOut = Nd4j.readBinary(new File("src/main/java/fusion/correct_outs/transp/TranspConv5x5s1p1.bin"));
       checkError(layerOut, TrueOut, convType.TRANSP);
       
@@ -93,7 +92,7 @@ public class Correctness{
       padding = 1;
       outMats = StandardMatrices.TranspMat(5, 5, 3);
       TranspLayer = new Layer(outMats.get(1), outMats.get(1));
-      layerOut = TranspLayer.TranspConv(outMats.get(0), stride, padding);
+      layerOut = TranspLayer.TranspConv(outMats.get(0), stride, padding, false);
       TrueOut = Nd4j.readBinary(new File("src/main/java/fusion/correct_outs/transp/TranspConv5x5s2p1.bin"));
       checkError(layerOut, TrueOut, convType.TRANSP);
       
@@ -104,7 +103,7 @@ public class Correctness{
       INDArray Weights = Nd4j.readNpy(new File("src/main/java/fusion/correct_outs/transp/TranspConv10x10s2p1c128-rand-w.npy"));
       INDArray Input = Nd4j.readNpy(new File("src/main/java/fusion/correct_outs/transp/TranspConv10x10s2p1c128-rand-in.npy"));
       TranspLayer = new Layer(Weights, Weights);
-      layerOut = TranspLayer.TranspConv(Input, stride, padding);
+      layerOut = TranspLayer.TranspConv(Input, stride, padding, false);
       TrueOut = Nd4j.readNpy(new File("src/main/java/fusion/correct_outs/transp/TranspConv10x10s2p1c128-rand-out.npy"));
       checkError(layerOut, TrueOut, convType.TRANSP);
       

@@ -138,7 +138,11 @@ public class Layer {
     return dilated;
   }*/
 
-  public INDArray TranspConv(INDArray input, int stride, int padding) {
+  public INDArray TranspConv(INDArray input, int stride, int padding){
+    return TranspConv(input, stride, padding, true);
+  }
+
+  public INDArray TranspConv(INDArray input, int stride, int padding, boolean bias) {
     int inChannels = (int) input.shape()[1];
     int inDim = (int) input.shape()[2]; //Remember that inputs are square, always
 
@@ -174,7 +178,11 @@ public class Layer {
         }
       }
     }
-    
+
+    if (bias){
+      INDArray summableb = (this.b).reshape(1,outChannels,1,1).broadcast(1,outChannels, outDim, outDim);
+      output = output.add(summableb);
+    }
 
     return output;
   }

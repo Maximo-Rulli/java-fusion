@@ -9,8 +9,6 @@ import org.nd4j.linalg.factory.Nd4j;
 
 // U-Net-like neural network (architecture only)
 public class UNet {
-  private INDArray W;
-  private INDArray b;
 
   public UNet(String path) {
     Map<String, INDArray> weights = new HashMap<>();
