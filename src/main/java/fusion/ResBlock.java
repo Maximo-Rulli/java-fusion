@@ -9,7 +9,7 @@ public class ResBlock extends Module{
   public Conv2D shortcut;  // null if Identity
 
   public ResBlock(String blockName, int blockNumber){
-    this(blockName, blockNumber, false);
+    this(blockName, blockNumber, true);
   }
 
   public ResBlock(String blockName, int blockNumber, boolean same) {
