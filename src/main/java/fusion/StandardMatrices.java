@@ -20,7 +20,7 @@ public class StandardMatrices {
     final int C = 2;
     final int outChannels = 3;
 
-    return (tfStruct == null ? builder(C, outChannels, null, null) : builder(C, outChannels, null, null, tfStruct));
+    return (tfStruct == null ? builder(C, outChannels, null, null) : builder(C, outChannels, kernelSize, null, null, tfStruct));
   }
 
   // Matrices representing a preservation of output channels
@@ -28,7 +28,7 @@ public class StandardMatrices {
     final int C = 3;
     final int outChannels = 3;
 
-    return (tfStruct == null ? builder(C, outChannels, Height, Width) : builder(C, outChannels, Height, Width, tfStruct));
+    return (tfStruct == null ? builder(C, outChannels, Height, Width) : builder(C, outChannels, kernelSize, Height, Width, tfStruct));
   }
 
   // Matrices representing a decrease of output channels
@@ -36,14 +36,21 @@ public class StandardMatrices {
     final int C = 3;
     final int outChannels = 2;
 
-    return (tfStruct == null ? builder(C, outChannels, null, null) : builder(C, outChannels, null, null, tfStruct));
+    return (tfStruct == null ? builder(C, outChannels, null, null) : builder(C, outChannels, kernelSize, null, null, tfStruct));
+  }
+
+  // Special matrices for transpose convolution (similar logic to other ones)
+  public static List<INDArray> TranspMat(Integer Height, Integer Width, int C){
+    final int kernel = 4;
+    // By the design of our U-Net the input and output channels always have = dimension on transpose convolution
+    return builder(C, C, kernel, Height, Width, false);
   }
 
   private static List<INDArray> builder(int C, int outChannels, Integer Height, Integer Width){
-    return builder(C, outChannels, Height, Width, true);
+    return builder(C, outChannels, Height, kernelSize, Width, true);
   }
 
-  private static List<INDArray> builder(int C, int outChannels, Integer Height, Integer Width, boolean tfStruct){
+  private static List<INDArray> builder(int C, int outChannels, int kernelS, Integer Height, Integer Width, boolean tfStruct){
     //tfStruct is whether we are using tensorflows structure of building kernels
     //or pytorch's. Tf:[kernelH, kernelW, input, output] Torch:[output, input, kernelW, kernelH]
     //Note that all the loaded weights will be in Torch format
@@ -71,7 +78,7 @@ public class StandardMatrices {
 
     if (tfStruct) {
       // Kernel shape: [kernelH, kernelW, input, output]
-      kernel = Nd4j.create(new int[]{kernelSize, kernelSize, C, outChannels});
+      kernel = Nd4j.create(new int[]{kernelS, kernelS, C, outChannels});
       
       // Each (:, :, c, f) filter is filled with (f + 1) * (c + 1)
       for (int f = 0; f < outChannels; f++) {
@@ -82,7 +89,7 @@ public class StandardMatrices {
     }
     else {
       // Kernel shape: [output, input, kernelW, kernelH]
-      kernel = Nd4j.create(new int[]{outChannels, C, kernelSize, kernelSize});
+      kernel = Nd4j.create(new int[]{outChannels, C, kernelS, kernelS});
       
       // Each (:, :, c, f) filter is filled with (f + 1) * (c + 1)
       for (int f = 0; f < outChannels; f++) {

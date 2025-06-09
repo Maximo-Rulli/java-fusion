@@ -82,54 +82,101 @@ public class Layer {
     return out;
   }
 
-  public INDArray TranspConv(INDArray input, int stride, int padding, boolean debug) {
-    // Extract input and kernel shape info
-    final int C = (int) input.shape()[1];
-    final int H = (int) input.shape()[2];
-    final int W = (int) input.shape()[3];
+  /*public INDArray TranspConv(INDArray input, int stride, int padding) {
+    // Dilate input (insert zeros between elements for stride > 1)
+    INDArray dilatedInput = (stride > 1) ? dilateInput(input, stride) : input;
+    
+    // 2. Calculate effective padding
+    int kernelH = (int) this.W.shape()[2];
+    int effectivePadding = kernelH - 1 - padding;
+    
+    // Pad the dilated input
+    INDArray paddedInput = Nd4j.pad(dilatedInput, 
+                            new int[][]{{0,0}, {0,0}, 
+                              {effectivePadding, effectivePadding}, 
+                              {effectivePadding, effectivePadding}} 
+                            );
+    
+    // 4. Flip kernel (180-degree rotation)
+   // INDArray flippedKernel = flipKernel(this.W);
+    
+    // Regular convolution with stride=1
+    return this.Conv(paddedInput, 1, 0, false, false);
+  }
 
-    int outC = (int) this.W.shape()[0];
-    int kernelSize = (int) this.W.shape()[2];
-
-    // 1. Reshape input to [Channels, H * W]
-    INDArray inputFlat = input.reshape(C, H * W); // [Channels, H*W]
-
-    // 2. Reshape kernel to [outChannels, Channels * kernelH * kernelW]
-    INDArray kernelFlat = this.W.reshape(outC, -1);
-
-    // 3. Multiply: [H*W, Channels] x [Channels, outChannels * kernelH * kernelW]
-    INDArray patches = inputFlat.transpose().mmul(kernelFlat); // [H*W, outChannels * kH * kW]
-
-    // 4. Reshape to col2im format: [1, outChannels, H, W, kernelH, kernelW]
-    INDArray patchesReshaped = patches.transpose()                        // [Channels * kernelH * kernelW, H*W]
-            .reshape(outC, kernelSize, kernelSize, H, W)                              // [Channels, kernelH, kernelW, H, W]
-            .permute(0, 3, 4, 1, 2)                                       // [Channels, H, W, kernelH, kernelW]
-            .reshape(1, outC, H, W, kernelSize, kernelSize);                          // [1, Channels, H, W, kernelH, kernelW]
-
-    // 5. Output shape before cropping
-    int fullOutH = (H - 1) * stride + kernelSize;
-    int fullOutW = (W - 1) * stride + kernelSize;
-
-    // 6. Use col2im to scatter patches into output image
-    INDArray output = Convolution.col2im(
-      patchesReshaped,
-      stride, stride,
-      0, 0, // we already handled padding by target shape
-      fullOutH,
-      fullOutW
-    );
-
-    // 7. Crop output to simulate padding (transpose conv "pads" output)
-    if (padding > 0) {
-      output = output.get(
-        NDArrayIndex.all(),
-        NDArrayIndex.all(),
-        NDArrayIndex.interval(padding, padding + (fullOutH - 2 * padding)),
-        NDArrayIndex.interval(padding, padding + (fullOutW - 2 * padding))
-      );
+  private INDArray dilateInput(INDArray input, int stride) {
+    // Get input dimensions [batch, channels, height, width]
+    long[] inputShape = input.shape();
+    long batch = inputShape[0];
+    long channels = inputShape[1];
+    long height = inputShape[2];
+    long width = inputShape[3];
+    
+    // Calculate dilated dimensions
+    long dilatedHeight = height + (height - 1) * (stride - 1);
+    long dilatedWidth = width + (width - 1) * (stride - 1);
+    
+    // Create output array filled with zeros
+    INDArray dilated = Nd4j.zeros(batch, channels, dilatedHeight, dilatedWidth);
+    
+    // Fill the dilated array by placing original values at strided positions
+    for (int b = 0; b < batch; b++) {
+        for (int c = 0; c < channels; c++) {
+            for (int h = 0; h < height; h++) {
+                for (int w = 0; w < width; w++) {
+                    // Place original value at dilated position
+                    int dilatedH = h * stride;
+                    int dilatedW = w * stride;
+                    
+                    double value = input.getDouble(b, c, h, w);
+                    dilated.putScalar(new int[]{b, c, dilatedH, dilatedW}, value);
+                }
+            }
+        }
     }
+    
+    return dilated;
+  }*/
 
-      return output;
+  public INDArray TranspConv(INDArray input, int stride, int padding) {
+    int inChannels = (int) input.shape()[1];
+    int inDim = (int) input.shape()[2]; //Remember that inputs are square, always
+
+    int outChannels = (int) W.shape()[0];
+    int kernelSize = (int) W.shape()[2];
+
+    int outDim = (inDim - 1) * stride - 2 * padding + kernelSize;
+
+    INDArray output = Nd4j.zeros(1, outChannels, outDim, outDim);
+
+    for (int cIn = 0; cIn < inChannels; cIn++) {
+      for (int h = 0; h < inDim; h++) {
+        for (int w = 0; w < inDim; w++) {
+          float val = input.getFloat(0, cIn, h, w);
+
+          int outHStart = h * stride - padding;
+          int outWStart = w * stride - padding;
+
+          for (int cOut = 0; cOut < outChannels; cOut++) {
+            for (int kh = 0; kh < kernelSize; kh++) {
+              for (int kw = 0; kw < kernelSize; kw++) {
+                int outH = outHStart + kh;
+                int outW = outWStart + kw;
+
+                if (outH >= 0 && outH < outDim && outW >= 0 && outW < outDim) {
+                  float weight = W.getFloat(cOut, cIn, kh, kw);
+                  float current = output.getFloat(1, cOut, outH, outW);
+                  output.putScalar(new int[]{0, cOut, outH, outW}, current + val * weight);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    
+
+    return output;
   }
 
   public static INDArray concat(INDArray x1, INDArray x2) {
