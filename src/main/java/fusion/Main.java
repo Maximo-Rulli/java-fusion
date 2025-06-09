@@ -25,7 +25,7 @@ public class Main {
                           
                           }, new int[]{6,5});
     
-    INDArray b = Nd4j.create(new float[]{0,0,1,0,0,-9}, new int[]{6});
+    INDArray b = Nd4j.create(new float[]{10, 20, 32, 54}, new int[]{4});
     //Layers.maxPool(a, 2, 2);
 
     //System.out.println(Layers.concat(a, a));
@@ -34,7 +34,9 @@ public class Main {
 
     INDArray testB = Nd4j.rand(new int[]{1, 2, 4, 4});
 
-    System.out.println(TestL.Linear(a, true));
+    //System.out.println(TestL.Linear(a, true));
+
+    System.out.println(Utils.timestepEmbedding(b));
     
     Correctness.run();
     //Layers.Conv(b, 1, 1, 2, 1, 0);

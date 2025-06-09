@@ -1,10 +1,43 @@
 package fusion;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 // Utility class for image operations and noise handling
 public class Utils {
     public static void addNoise(double[] image, double[] noise, double alpha) {}
 
     public static void clipImage(double[] image) {}
+
+    public static INDArray timestepEmbedding(INDArray timesteps) {
+        return timestepEmbedding(timesteps, 64, 10000);
+    }
+
+    public static INDArray timestepEmbedding(INDArray timesteps, int dim, int maxPeriod) {
+      int half = dim / 2;
+
+      // Create [0, 1, ..., half-1]
+      INDArray arange = Nd4j.arange(half);
+
+      // Compute the frequencies: exp(-log(maxPeriod) * i / half)
+      double logMaxPeriod = Math.log(maxPeriod);
+      INDArray freqs = Transforms.exp(arange.mul(-logMaxPeriod / half));
+
+      // Reshape timesteps: [batchSize, 1]
+      INDArray timestepsFloat = timesteps.castTo(org.nd4j.linalg.api.buffer.DataType.FLOAT);
+      timestepsFloat = timestepsFloat.reshape(timesteps.length(), 1);
+
+      // Multiply timesteps by frequencies -> [batchSize, half]
+      INDArray args = timestepsFloat.mmul(freqs.reshape(1, half));
+
+      INDArray cosPart = Transforms.cos(args);
+      INDArray sinPart = Transforms.sin(args);
+
+      // Concatenate cos and sin parts along last dimension
+      INDArray embedding = Nd4j.concat(1, cosPart, sinPart);
+
+      return embedding;
+    }
 
     public static void saveImage(double[] image, String filename) {}
 

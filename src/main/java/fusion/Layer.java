@@ -1,6 +1,5 @@
 package fusion;
 
-
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.convolution.Convolution;
@@ -15,11 +14,23 @@ public class Layer {
   // Weights W, Biases b
   public INDArray W;
   public INDArray b;
+
+  enum layerType {
+    Conv,
+    TranspConv,
+    Linear
+  }
   
-  public Layer(String path){
+  public Layer(String path, layerType lType){
     //Load from .npy files stored in /weights
     W = Nd4j.readNpy(new File("weights/" + path + "_weight.npy"));
     b = Nd4j.readNpy(new File("weights/" + path + "_bias.npy"));
+
+    if (lType == layerType.TranspConv){
+      /// This is because in Transpose convolution of torch, dimensions are swapped (cOut, cIn, H, W)
+      /// https://docs.pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html
+      this.W = this.W.permute(1,0,2,3);
+    }
   }
 
   public Layer(INDArray W, INDArray b){
@@ -186,6 +197,10 @@ public class Layer {
     }
 
     return output;
+  }
+
+  public INDArray Linear(INDArray input) {
+    return Linear(input, true);
   }
 
   public INDArray Linear(INDArray input, boolean bias) {
