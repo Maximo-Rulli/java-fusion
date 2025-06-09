@@ -155,44 +155,71 @@ public class Layer {
   }
 
   public INDArray TranspConv(INDArray input, int stride, int padding, boolean bias) {
-    int inChannels = (int) input.shape()[1];
-    int inDim = (int) input.shape()[2]; //Remember that inputs are square, always
-
-    int outChannels = (int) W.shape()[0];
-    int kernelSize = (int) W.shape()[2];
-
-    int outDim = (inDim - 1) * stride - 2 * padding + kernelSize;
-
-    INDArray output = Nd4j.zeros(1, outChannels, outDim, outDim);
-
-    for (int cIn = 0; cIn < inChannels; cIn++) {
-      for (int h = 0; h < inDim; h++) {
-        for (int w = 0; w < inDim; w++) {
-          float val = input.getFloat(0, cIn, h, w);
-
-          int outHStart = h * stride - padding;
-          int outWStart = w * stride - padding;
-
-          for (int cOut = 0; cOut < outChannels; cOut++) {
-            for (int kh = 0; kh < kernelSize; kh++) {
-              for (int kw = 0; kw < kernelSize; kw++) {
-                int outH = outHStart + kh;
-                int outW = outWStart + kw;
-
-                if (outH >= 0 && outH < outDim && outW >= 0 && outW < outDim) {
-                  float weight = W.getFloat(cOut, cIn, kh, kw);
-                  float current = output.getFloat(1, cOut, outH, outW);
-                  output.putScalar(new int[]{0, cOut, outH, outW}, current + val * weight);
-                }
-              }
+    long[] inputShape = input.shape();
+    int batchSize = (int)inputShape[0];
+    int inChannels = (int)inputShape[1];
+    int inHeight = (int)inputShape[2];
+    int inWidth = (int)inputShape[3];
+    
+    long[] weightShape = this.W.shape();
+    int outChannels = (int)weightShape[0];
+    int kernelSize = (int)weightShape[2];
+    
+    int outHeight = (inHeight - 1) * stride - 2 * padding + kernelSize;
+    int outWidth = (inWidth - 1) * stride - 2 * padding + kernelSize;
+    
+    // Reshape input to [H_in * W_in, C_in]
+    INDArray inputReshaped = input.permute(0, 2, 3, 1)
+                                  .reshape(batchSize * inHeight * inWidth, inChannels);
+    
+    // Reshape weights to [C_out * K * K, C_in]  
+    INDArray weightReshaped = W.permute(0, 2, 3, 1)
+                               .reshape(outChannels * kernelSize * kernelSize, inChannels);
+    
+    // Matrix multiplication: [H_in * W_in, C_in] × [C_in, C_out * K * K]
+    INDArray result = inputReshaped.mmul(weightReshaped.transpose());
+    // result: [H_in * W_in, C_out * K * K]
+    
+    // Reshape to [H_in, W_in, C_out, K, K]
+    result = result.reshape(inHeight, inWidth, outChannels, kernelSize, kernelSize);
+    
+    // Initialize output
+    INDArray output = Nd4j.zeros(batchSize, outChannels, outHeight, outWidth);
+    
+    // Scatter the results to output positions
+    for (int h = 0; h < inHeight; h++) {
+        for (int w = 0; w < inWidth; w++) {
+            int outHStart = h * stride - padding;
+            int outWStart = w * stride - padding;
+            
+            // Boundary checks
+            int hStart = Math.max(0, -outHStart);
+            int wStart = Math.max(0, -outWStart);
+            int hEnd = Math.min(kernelSize, outHeight - outHStart);
+            int wEnd = Math.min(kernelSize, outWidth - outWStart);
+            
+            if (hStart >= hEnd || wStart >= wEnd) continue;
+            
+            int outHPos = Math.max(outHStart, 0);
+            int outWPos = Math.max(outWStart, 0);
+            
+            for (int cOut = 0; cOut < outChannels; cOut++) {
+                INDArray kernelPatch = result.get(NDArrayIndex.point(h), NDArrayIndex.point(w), 
+                                                NDArrayIndex.point(cOut),
+                                                NDArrayIndex.interval(hStart, hEnd),
+                                                NDArrayIndex.interval(wStart, wEnd));
+                
+                INDArray outPatch = output.get(NDArrayIndex.point(0), NDArrayIndex.point(cOut),
+                                             NDArrayIndex.interval(outHPos, outHPos + hEnd - hStart),
+                                             NDArrayIndex.interval(outWPos, outWPos + wEnd - wStart));
+                
+                outPatch.addi(kernelPatch);
             }
-          }
         }
-      }
     }
 
     if (bias){
-      INDArray summableb = (this.b).reshape(1,outChannels,1,1).broadcast(1,outChannels, outDim, outDim);
+      INDArray summableb = (this.b).reshape(1,outChannels,1,1).broadcast(1,outChannels, outHeight, outHeight);
       output = output.add(summableb);
     }
 
