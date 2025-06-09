@@ -5,6 +5,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.convolution.Convolution;
 import org.nd4j.linalg.indexing.NDArrayIndex;
+import org.nd4j.linalg.ops.transforms.Transforms;
 
 import java.io.File;
 import java.lang.Math;
@@ -12,13 +13,13 @@ import java.lang.Math;
 // Basic operations used in the U-Net architecture
 public class Layer {
   // Weights W, Biases b
-  private INDArray W;
-  private INDArray b;
+  public INDArray W;
+  public INDArray b;
   
-  public Layer(String W_name, String b_name){
+  public Layer(String path){
     //Load from .npy files stored in /weights
-    W = Nd4j.readNpy(new File("weights/" + W_name + "_weight.npy"));
-    b = Nd4j.readNpy(new File("weights/" + b_name + "_bias.npy"));
+    W = Nd4j.readNpy(new File("weights/" + path + "_weight.npy"));
+    b = Nd4j.readNpy(new File("weights/" + path + "_bias.npy"));
   }
 
   public Layer(INDArray W, INDArray b){
@@ -194,7 +195,11 @@ public class Layer {
   public static INDArray concat(INDArray x1, INDArray x2) {
     return Nd4j.concat(0, x1, x2);
   }
-
+  
+  public static INDArray SiLU(INDArray x) {
+    return x.mul(Transforms.sigmoid(x, true));
+  }
+  
   public static INDArray maxPool(INDArray input, int kernelSize, int stride) {
     // Extract shape from input (# channels/layers, height, width)
     // It's supposed to use concurrency, so each image calls a different function
@@ -230,7 +235,7 @@ public class Layer {
     //System.out.println(out);
     return out;
   }
-
+  
   public static INDArray maxPool(INDArray input){
     return maxPool(input, 2, 1);
   }
