@@ -122,7 +122,7 @@ public class DDPM {
 
             if (i%saveSteps == 0){
                 System.out.println(img);
-                ImageSaver.saveImage(img, "thr-"+ threadNumber +"-steps"+(1500-i));
+                ImageSaver.saveImage(img, "imgs/thr"+ threadNumber +"-steps"+(1500-i));
             }
             
             // Add noise for all steps except the last one (i > 0)

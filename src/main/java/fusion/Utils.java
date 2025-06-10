@@ -5,10 +5,6 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 // Utility class for image operations and noise handling
 public class Utils {
-    public static void addNoise(double[] image, double[] noise, double alpha) {}
-
-    public static void clipImage(double[] image) {}
-
     public static INDArray timestepEmbedding(INDArray timesteps) {
         return timestepEmbedding(timesteps, 64, 10000);
     }
