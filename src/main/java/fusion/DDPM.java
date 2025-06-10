@@ -88,13 +88,13 @@ public class DDPM {
         return result;
     }
 
-    public INDArray sample(int saveSteps) {
+    public INDArray sample(int saveSteps, int threadNumber) {
         // Start with pure noise
         INDArray img = Nd4j.randn(1,1,28,28);
         
         // Reverse diffusion: go from timestep T-1 down to 0
         for (int i = this.timesteps - 1; i >= 0; i--) {
-            System.out.println("Sampling step: " + (this.timesteps - i) + "/" + this.timesteps);
+            System.out.println("Sampling step of thread " + threadNumber + ": " + (this.timesteps - i) + "/" + this.timesteps);
             
             // Create timestep tensor [batch_size] filled with current timestep
             INDArray t = Nd4j.zeros(1).addi(i);
@@ -121,7 +121,8 @@ public class DDPM {
             img = denoised.mul(oneOverSqrtAlpha);
 
             if (i%saveSteps == 0){
-                ImageSaver.saveImage(img, "output-"+i+".png");
+                System.out.println(img);
+                ImageSaver.saveImage(img, "thr-"+ threadNumber +"-steps"+(1500-i));
             }
             
             // Add noise for all steps except the last one (i > 0)
