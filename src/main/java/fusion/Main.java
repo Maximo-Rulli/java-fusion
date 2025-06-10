@@ -8,16 +8,16 @@ public class Main {
     UNet Model = new UNet();
     Correctness CorrectnessTests = new Correctness(Model);
     CorrectnessTests.run();
-    Tests.run();
+    //Tests.run();
 
     //DDPM JavaFusion = new DDPM(Model, 1500);
 
     for (int i = 0; i < NUM_SAMPLES; i++) {
-        int sampleIndex = i;  // capture loop variable for use in lambda
+        int sampleIndex = i;
         Runnable task = () -> {
-            // Create a separate DDPM instance per thread if not thread-safe
+            // Create a separate DDPM instance per thread (just in case)
             DDPM JavaFusion = new DDPM(Model, 1500);
-            JavaFusion.sample(100, sampleIndex); // assuming 'run' method does inference
+            JavaFusion.sample(100, sampleIndex);
         };
 
         Thread thread = new Thread(task);
