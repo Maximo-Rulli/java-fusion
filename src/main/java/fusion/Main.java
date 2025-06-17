@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class Main {
   public static void main(String[] args) throws IOException, InterruptedException {
-    final int NUM_SAMPLES = 5;
+    final int NUM_SAMPLES = 1;
     UNet Model = new UNet();
     Correctness CorrectnessTests = new Correctness(Model);
     CorrectnessTests.run();
