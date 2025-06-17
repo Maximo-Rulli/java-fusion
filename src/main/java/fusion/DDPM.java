@@ -41,8 +41,8 @@ public class DDPM {
         
         // Get sqrt_alphas_cumprod values for each timestep in the batch
         // t is [batch_size] containing timestep indices, in our case only 1
-        INDArray sqrtAlphasCumprodT = gatherByIndices(this.sqrtAlphasCumprod, t);
-        INDArray sqrtOneMinusAlphasCumprodT = gatherByIndices(this.sqrtOneMinusAlphasCumprod, t);
+        INDArray sqrtAlphasCumprodT = gatherByIndices(sqrtAlphasCumprod, t);
+        INDArray sqrtOneMinusAlphasCumprodT = gatherByIndices(sqrtOneMinusAlphasCumprod, t);
         
         // Reshape to broadcast properly
         // This allows element-wise multiplication with [1, channels, height, width]
@@ -94,7 +94,7 @@ public class DDPM {
         
         // Reverse diffusion: go from timestep T-1 down to 0
         for (int i = this.timesteps - 1; i >= 0; i--) {
-            System.out.println("Sampling step of thread " + threadNumber + ": " + (this.timesteps - i) + "/" + this.timesteps);
+            System.out.println("Sampling step of thread " + threadNumber + ": " + (timesteps - i) + "/" + timesteps);
             
             // Create timestep tensor [batch_size] filled with current timestep
             INDArray t = Nd4j.zeros(1).addi(i);

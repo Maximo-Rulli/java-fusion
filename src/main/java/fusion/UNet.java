@@ -59,43 +59,43 @@ public class UNet {
   }
 
   public INDArray predict(INDArray x, INDArray timesteps) {
-    INDArray t = this.time_embed_out.forward(Layer.SiLU(this.time_embed.forward(Utils.timestepEmbedding(timesteps))));
+    INDArray t = time_embed_out.forward(Layer.SiLU(this.time_embed.forward(Utils.timestepEmbedding(timesteps))));
 
     INDArray h = this.conv_in.forward(x);
     List<INDArray> hs = new ArrayList<>();
     
-    h = this.down1.get(0).forward(h, t);
+    h = down1.get(0).forward(h, t);
     hs.add(h);
-    h = this.down1.get(1).forward(h, t);
+    h = down1.get(1).forward(h, t);
     hs.add(h);
-    h = this.down1.get(2).forward(h, t);
+    h = down1.get(2).forward(h, t);
     
     // Down2: 128->128->256, then downsample to 256
-    h = this.down2.get(0).forward(h, t);
+    h = down2.get(0).forward(h, t);
     hs.add(h);
-    h = this.down2.get(1).forward(h, t);
+    h = down2.get(1).forward(h, t);
     hs.add(h);
-    h = this.down2.get(2).forward(h, t);
+    h = down2.get(2).forward(h, t);
     
     // Middle: 256->256->256
-    h = this.middle.get(0).forward(h, t);
-    h = this.middle.get(1).forward(h, t);
+    h = middle.get(0).forward(h, t);
+    h = middle.get(1).forward(h, t);
     
     // Decoder - carefully match the skip connections
     // Up1: 256 + skip connections
-    h = this.up1.get(0).forward(h, t);  // Upsample: 256->256
+    h = up1.get(0).forward(h, t);  // Upsample: 256->256
     h = Layer.concat(h, hs.remove(3));
-    h = this.up1.get(1).forward(h, t);
+    h = up1.get(1).forward(h, t);
     h = Layer.concat(h, hs.remove(2));
-    h = this.up1.get(2).forward(h, t);
+    h = up1.get(2).forward(h, t);
     
     // Up2: 128 + skip connections
-    h = this.up2.get(0).forward(h, t);  // Upsample: 128->128
+    h = up2.get(0).forward(h, t);  // Upsample: 128->128
     h = Layer.concat(h, hs.remove(1));
-    h = this.up2.get(1).forward(h, t);
+    h = up2.get(1).forward(h, t);
     h = Layer.concat(h, hs.remove(0));
-    h = this.up2.get(2).forward(h, t);
+    h = up2.get(2).forward(h, t);
 
-    return this.conv_out.forward(Layer.SiLU(h));
+    return conv_out.forward(Layer.SiLU(h));
   }
 }
