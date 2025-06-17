@@ -44,8 +44,8 @@ public class Layer {
   }
 
   public INDArray Conv(INDArray input, int stride, int padding, boolean bias, boolean debug) {
-    final int outChannels = (int) this.W.shape()[0];
-    final int kernelSize = (int) this.W.shape()[3];
+    final int outChannels = (int) W.shape()[0];
+    final int kernelSize = (int) W.shape()[3];
 
     // We transform the input into intermediate representation to then flatten it
     INDArray patches = Convolution.im2col(input, kernelSize, kernelSize, stride, stride, padding, padding, false);
@@ -61,7 +61,7 @@ public class Layer {
     //Output shape: [N * Out_H * Out_W, Channels * Kernel_H * Kernel_W]
 
     // Reshape kernel to a vector to apply it to reshaped patches
-    INDArray kernelReshaped = this.W.reshape('c', 
+    INDArray kernelReshaped = W.reshape('c', 
                             new long[]{
                               outChannels, 
                               W.shape()[1] * kernelSize * kernelSize
@@ -161,7 +161,7 @@ public class Layer {
     int inHeight = (int)inputShape[2];
     int inWidth = (int)inputShape[3];
     
-    long[] weightShape = this.W.shape();
+    long[] weightShape = W.shape();
     int outChannels = (int)weightShape[0];
     int kernelSize = (int)weightShape[2];
     
@@ -219,7 +219,7 @@ public class Layer {
     }
 
     if (bias){
-      INDArray summableb = (this.b).reshape(1,outChannels,1,1).broadcast(1,outChannels, outHeight, outHeight);
+      INDArray summableb = b.reshape(1,outChannels,1,1).broadcast(1,outChannels, outHeight, outHeight);
       output = output.add(summableb);
     }
 
@@ -231,7 +231,7 @@ public class Layer {
   }
 
   public INDArray Linear(INDArray input, boolean bias) {
-    return this.b.reshape(1, this.b.shape()[0]).add(input.mmul(this.W.transpose()));
+    return b.reshape(1, b.shape()[0]).add(input.mmul(W.transpose()));
   }
 
   public static INDArray concat(INDArray x1, INDArray x2) {
@@ -242,44 +242,4 @@ public class Layer {
     return x.mul(Transforms.sigmoid(x, true));
   }
   
-  public static INDArray maxPool(INDArray input, int kernelSize, int stride) {
-    // Extract shape from input (# channels/layers, height, width)
-    // It's supposed to use concurrency, so each image calls a different function
-    long[] shape = input.shape();
-
-    // Assume that input is always square, so output width = output height
-    int out_shape =  Math.floorDiv(((int) shape[2]-kernelSize), stride)+1;
-
-    // Create empty output with corresponding shape
-    INDArray out = Nd4j.zeros(shape[0], out_shape, out_shape);
-
-    // Main for loop where the Max-pooling is done
-
-    // Iteration over channels
-    for (int c=0; c<shape[0]; c++){
-      // Iteration inside a channel
-      for (int i=0; i*stride+kernelSize-1<shape[1]; i++){
-        for (int j=0; j*stride+kernelSize-1<shape[2]; j++){
-  
-          // Slice array part that the pooling will be applied at
-          INDArray slice = input.get(
-            NDArrayIndex.point(c),
-            NDArrayIndex.interval(i*stride, i*stride+kernelSize),
-            NDArrayIndex.interval(j*stride, j*stride+kernelSize)
-          );
-          
-          // Extract maxNumber of slice and put it in corresponding output position
-          out.putScalar(new int[] {c,i,j}, slice.maxNumber().floatValue());
-        }       
-      }
-    }
-    
-    //System.out.println(out);
-    return out;
-  }
-  
-  public static INDArray maxPool(INDArray input){
-    return maxPool(input, 2, 1);
-  }
-
 }
