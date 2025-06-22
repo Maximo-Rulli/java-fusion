@@ -59,6 +59,8 @@ public class UNet {
   }
 
   public INDArray predict(INDArray x, INDArray timesteps) {
+    // Where the art begins
+  
     INDArray t = time_embed_out.forward(Layer.SiLU(this.time_embed.forward(Utils.timestepEmbedding(timesteps))));
 
     INDArray h = this.conv_in.forward(x);

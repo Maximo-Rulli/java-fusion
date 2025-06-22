@@ -32,6 +32,7 @@ public class Correctness{
     MTest.run();
   }
 
+  
   private static class ConvTest {
     private static void run() throws IOException, InterruptedException{
       int stride = 1;
@@ -119,6 +120,7 @@ public class Correctness{
     }
   }
   
+
   private class ModelTest {
     private  void run() throws IOException, InterruptedException{
       INDArray sampleInput = (Nd4j.create(new float[]{2})).broadcast(1,1,28,28);
@@ -130,6 +132,7 @@ public class Correctness{
     }
   }
   
+
   private static void generateSample(int padding, int stride, convType convolutionType, Integer Height, Integer Width) throws IOException{
     List<INDArray> outMats;
     String filename;

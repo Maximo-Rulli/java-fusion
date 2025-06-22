@@ -17,7 +17,7 @@ public class Main {
         Runnable task = () -> {
             // Create a separate DDPM instance per thread (just in case)
             DDPM JavaFusion = new DDPM(Model, 1500);
-            JavaFusion.sample(100, sampleIndex);
+            System.out.println(JavaFusion.sample(100, sampleIndex));
         };
 
         Thread thread = new Thread(task);

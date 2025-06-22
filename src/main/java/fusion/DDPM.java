@@ -1,9 +1,10 @@
 package fusion;
 
+import java.io.File;
+
 import org.nd4j.linalg.api.buffer.DataType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.ops.transforms.Transforms;
 
 // Core DDPM structure
 public class DDPM {
@@ -12,46 +13,19 @@ public class DDPM {
     private INDArray betas;
     private INDArray alphas;
     private INDArray alphasCumprod;
-    private INDArray sqrtAlphasCumprod;
-    private INDArray sqrtOneMinusAlphasCumprod;
     
     public DDPM(UNet model, int timesteps) {
         this.model = model;
         this.timesteps = timesteps;
         
         // Create noise schedule using linear beta schedule
-        this.betas = linearBetaSchedule(timesteps);
+        betas = linearBetaSchedule(timesteps);
         
         // alphas = 1.0 - betas
-        this.alphas = Nd4j.ones(timesteps).sub(this.betas);
+        alphas = Nd4j.ones(timesteps).sub(betas);
         
         // alphas_cumprod = cumulative product of alphas
-        this.alphasCumprod = cumprod(this.alphas);
-        
-        // Pre-compute values for sampling
-        this.sqrtAlphasCumprod = Transforms.sqrt(this.alphasCumprod);
-        this.sqrtOneMinusAlphasCumprod = Transforms.sqrt(Nd4j.ones(timesteps).sub(this.alphasCumprod));
-    }
-
-    public INDArray qSample(INDArray xStart, INDArray t, INDArray noise) {
-        if (noise == null) {
-            // Generate random noise with same shape as x_start
-            noise = Nd4j.randn(1,1,28,28);
-        }
-        
-        // Get sqrt_alphas_cumprod values for each timestep in the batch
-        // t is [batch_size] containing timestep indices, in our case only 1
-        INDArray sqrtAlphasCumprodT = gatherByIndices(sqrtAlphasCumprod, t);
-        INDArray sqrtOneMinusAlphasCumprodT = gatherByIndices(sqrtOneMinusAlphasCumprod, t);
-        
-        // Reshape to broadcast properly
-        // This allows element-wise multiplication with [1, channels, height, width]
-        sqrtAlphasCumprodT = sqrtAlphasCumprodT.reshape(1, 1, 1, 1);
-        sqrtOneMinusAlphasCumprodT = sqrtOneMinusAlphasCumprodT.reshape(1, 1, 1, 1);
-        
-        // Apply the forward diffusion formula:
-        // x_t = sqrt(alpha_cumprod_t) * x_0 + sqrt(1 - alpha_cumprod_t) * noise
-        return sqrtAlphasCumprodT.mul(xStart).add(sqrtOneMinusAlphasCumprodT.mul(noise));
+        alphasCumprod = cumprod(alphas);
     }
     
     // Helper method to create linear beta schedule
@@ -60,7 +34,7 @@ public class DDPM {
         double end = 0.02;
         
         // Create linear schedule from start to end
-        INDArray schedule = Nd4j.linspace(DataType.FLOAT, start, end, (long) timesteps);
+        INDArray schedule = Nd4j.linspace(start, end, timesteps, DataType.FLOAT);
         return schedule;
     }
     
@@ -76,21 +50,12 @@ public class DDPM {
         return result;
     }
     
-    // Helper method to gather values by indices (similar to PyTorch's indexing)
-    private INDArray gatherByIndices(INDArray source, INDArray indices) {
-        INDArray result = Nd4j.zeros(indices.shape());
-        
-        for (int i = 0; i < indices.length(); i++) {
-            int index = indices.getInt(i);
-            result.putScalar(i, source.getDouble(index));
-        }
-        
-        return result;
-    }
 
     public INDArray sample(int saveSteps, int threadNumber) {
         // Start with pure noise
-        INDArray img = Nd4j.randn(1,1,28,28);
+        //INDArray img = Nd4j.randn(1,1,28,28);
+
+        INDArray img = Nd4j.readNpy(new File("./src/main/java/fusion/test_outs/init.npy"));
         
         // Reverse diffusion: go from timestep T-1 down to 0
         for (int i = this.timesteps - 1; i >= 0; i--) {
@@ -121,7 +86,7 @@ public class DDPM {
             img = denoised.mul(oneOverSqrtAlpha);
 
             if (i%saveSteps == 0){
-                System.out.println(img);
+                //System.out.println(img);
                 ImageSaver.saveImage(img, "imgs/thr"+ threadNumber +"-steps"+(1500-i));
             }
             

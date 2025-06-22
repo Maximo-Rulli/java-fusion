@@ -61,7 +61,7 @@ public class ImageSaver {
         double min = input.minNumber().doubleValue();
         double max = input.maxNumber().doubleValue();
         
-        System.out.println("Input range: [" + min + ", " + max + "]");
+        //System.out.println("Input range: [" + min + ", " + max + "]");
         
         // Different normalization strategies based on input range
         if (min >= -1.1 && max <= 1.1) {
